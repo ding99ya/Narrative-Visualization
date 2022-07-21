@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+    <script src='https://d3js.org/d3.v5.min.js'></script>
+    <script src="https://rawgit.com/susielu/d3-annotation/master/d3-annotation.min.js"></script>
+<style> 
+circle {fill: lightblue; stroke: white;} 
+#tooltip {
+    opacity: 0;
+    position: absolute;
+    text-align: left;
+    width: 200px;
+    height: 40px;
+    background: white;
+    border: 0px;
+}
+svg {display: block; margin: auto;}
+.topnav {
+  margin: auto;
+  width: 60%;
+  background-color: lightblue;
+  overflow: hidden;
+}
+.topnav a {
+  margin: auto;
+  width: 33%;
+  color: #f2f2f2;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+  font-size: 17px;
+}
+.topnav a:hover {
+  background-color: #f2f2f2;
+  color: lightblue;
+}
+.topnav a.active {
+  background-color: #f2f2f2;
+  color: lightblue;
+}
+.topnav-centered {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.state {
+  margin-left: 10%;
+  margin-bottom: 0;
+  padding-bottom: 0;
+  width: 10%;
+  background-color: lightblue;
+  overflow: hidden;
+}
+.state a {
+  margin: auto;
+  width: 33%;
+  color: #f2f2f2;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+  font-size: 17px;
+}
+.state a:hover {
+  background-color: #f2f2f2;
+  color: lightblue;
+}
+.state a.active {
+  background-color: #f2f2f2;
+  color: lightblue;
+}
+.state-left {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+</style>
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body onload = "init()">
+    <script >
+        async function init() {
+    data = await d3.csv("https://flunky.github.io/cars2017.csv");
+    firstData = data.filter(function(d) {
+        if (d["EngineCylinders"] <= 4) {
+            return d;
+        }
+    })
+    secondData = data.filter(function(d) {
+    if (d["EngineCylinders"] > 4 && d["EngineCylinders"] <= 8) {
+        return d;
+    }
+    })
+
+    xs = d3.scaleLog().domain([10,150]).range([0,400]);
+    ys = d3.scaleLog().domain([10,150]).range([400,0]);
+
+    var tooltip = d3.select("#tooltip");
+
+    d3.select('svg')
+    .append("g")
+    .attr("transform","translate("+50+","+50+")") 
+    .selectAll('circle')
+    .data(firstData)
+    .enter()
+    .append('circle')
+    .attr('cx',function(d,i) {return xs(d.AverageCityMPG);})
+    .attr('cy',function(d,i) {return ys(d.AverageHighwayMPG);})
+    .attr('r',5)
+    .style("fill", function(d,i){return "lightblue"})
+    .on("mouseover", function(d,i) {
+        tooltip.style("opacity", 1)
+            .style("left", (d3.event.pageX)+"px")
+            .style("top", (d3.event.pageY)+"px")
+            .html("Cylinders: "+d.EngineCylinders+"<br>"+"AverageCityMPG: "+d.AverageCityMPG+"<br>"+"AverageHighwayMPG: "+d.AverageHighwayMPG)
+    })
+    .on("mouseout", function() {
+        tooltip.style("opacity", 0)
+    })
+
+    d3.select('svg')
+    .append("g")
+    .attr("transform","translate("+50+","+50+")") 
+    .selectAll('circle')
+    .data(secondData)
+    .enter()
+    .append('circle')
+    .attr('cx',function(d,i) {return xs(d.AverageCityMPG);})
+    .attr('cy',function(d,i) {return ys(d.AverageHighwayMPG);})
+    .attr('r',5)
+    .style("fill", function(d,i){return "orange"})
+    .on("mouseover", function(d,i) {
+        tooltip.style("opacity", 1)
+            .style("left", (d3.event.pageX)+"px")
+            .style("top", (d3.event.pageY)+"px")
+            .html("Cylinders: "+d.EngineCylinders+"<br>"+"AverageCityMPG: "+d.AverageCityMPG+"<br>"+"AverageHighwayMPG: "+d.AverageHighwayMPG)
+    })
+    .on("mouseout", function() {
+        tooltip.style("opacity", 0)
+    })
+
+    d3.select('svg')
+    .append("g")
+    .attr("transform","translate("+50+","+50+")")
+    .call(d3.axisLeft(ys)
+    .tickValues([10,20,50,100])
+    .tickFormat(d3.format("~s")));
+
+    d3.select('svg')
+    .append("g")
+    .attr("transform","translate("+50+","+450+")")
+    .call(d3.axisBottom(xs)
+    .tickValues([10,20,50,100])
+    .tickFormat(d3.format("~s")));
+
+    d3.select('svg')
+    .append("text")
+    .attr("text-anchor", "end")
+    .attr("x", 450)
+    .attr("y", 440)
+    .text("Average City MPG");
+
+    d3.select('svg')
+    .append("text")
+    .attr("text-anchor", "end")
+    .attr("x", 0)
+    .attr("y", 70)
+    .attr("transform", "rotate(-90)")
+    .text("Average Highway MPG");
+
+    const annotations1 = [
+    {
+        note: {
+        label: "x-value: 150 y-value: 122",
+        title: "d3.annotationLabel"
+        },
+        x: 445,
+        y: 77,
+        dy: -37,
+        dx: -62
+    }, {
+        note: {
+        label: "x-value: 19 y-value: 25",
+        },
+        x: 142,
+        y: 315,
+        dy: 37,
+        dx: 62
+    }].map(function(d){ d.color = "lightblue"; return d})
+
+    const makeAnnotations1 = d3.annotation()
+        .type(d3.annotationLabel)
+        .annotations(annotations1)
+
+    d3.select("svg")
+    .append("g")
+    .attr("class", "annotation-group")
+    .call(makeAnnotations1)
+
+    const annotations2 = [
+    {
+        note: {
+        label: "x-value: 23 y-value: 29",
+        },
+        x: 170,
+        y: 290,
+        dy: 47,
+        dx: 114
+    }, {
+        note: {
+        label: "x-value: 11 y-value: 18",
+        },
+        x: 60,
+        y: 362,
+        dy: 47,
+        dx: 140
+    }].map(function(d){ d.color = "orange"; return d})
+
+    const makeAnnotations2 = d3.annotation()
+        .type(d3.annotationLabel)
+        .annotations(annotations2)
+
+    d3.select("svg")
+    .append("g")
+    .attr("class", "annotation-group")
+    .call(makeAnnotations2)
+}
+
+
+    </script>
+    <div class="state"> 
+        <div class="state-left">
+          <a href="https://github.com/ding99ya/CS416-Data-Visualization/blob/main/index.html" class="active">1</a>
+          <a href="https://github.com/ding99ya/CS416-Data-Visualization/blob/main/SecondScene.html">2</a>
+          <a href="https://github.com/ding99ya/CS416-Data-Visualization/blob/main/ThirdScene.html">3</a>
+        </div>
+    </div>
+    <svg width=500 height=500></svg>
+    <div id="tooltip"></div>
+    <div class="topnav"> 
+        <div class="topnav-centered">
+          <a href="https://github.com/ding99ya/CS416-Data-Visualization/blob/main/index.html" class="active">Less than 4 Cylinders</a>
+          <a href="https://github.com/ding99ya/CS416-Data-Visualization/blob/main/SecondScene.html">Less than 8 Cylinders</a>
+          <a href="https://github.com/ding99ya/CS416-Data-Visualization/blob/main/SecondScene.html">Less than 12 Cylinders</a>
+        </div>
+    </div>
+</body>
+</html>
+
